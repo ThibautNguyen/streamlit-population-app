@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
-import io
 
 # Configuration de la page
 st.set_page_config(
@@ -22,7 +21,7 @@ df = pd.DataFrame(data)
 def format_number(x):
     return f"{x:,.0f}".replace(",", " ")
 
-# Ajout d'une colonne formatée pour les tooltips
+# Ajout d'une colonne formatée pour les tooltips uniquement
 df['population_formatted'] = df['population'].apply(format_number)
 
 # Création du graphique
@@ -36,10 +35,11 @@ base = alt.Chart(df).encode(
 # Création de la ligne
 line = base.mark_line(color='#3B825C')
 
-# Création des points avec la même couleur
+# Création des points avec la même couleur, plus petits et sans contour
 points = base.mark_point(
     color='#3B825C',
-    size=100
+    size=60,
+    filled=True
 ).encode(
     tooltip=[
         alt.Tooltip('année:O', title='Année'),
@@ -59,30 +59,18 @@ st.title('Évolution de la Population')
 # Affichage du graphique
 st.altair_chart(chart, use_container_width=True)
 
-# Ajout des options d'export
-col1, col2, col3 = st.columns([1,2,1])
-with col2:
-    st.write("### Télécharger les données")
-    
-    # Export CSV
-    csv = df.to_csv(index=False).encode('utf-8-sig')
-    st.download_button(
-        label="📥 Télécharger en CSV",
-        data=csv,
-        file_name="population_data.csv",
-        mime="text/csv",
-    )
-    
-    # Export Excel
-    buffer = io.BytesIO()
-    with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
-        df.to_excel(writer, sheet_name='Population', index=False)
-    st.download_button(
-        label="📥 Télécharger en Excel",
-        data=buffer.getvalue(),
-        file_name="population_data.xlsx",
-        mime="application/vnd.ms-excel",
-    )
+# Préparation des données pour l'export (sans la colonne formatée)
+df_export = df[['année', 'population']]
+
+# Configuration de l'export natif de Streamlit
+st.dataframe(
+    df_export,
+    hide_index=True,
+    column_config={
+        "année": "Année",
+        "population": "Population"
+    }
+)
 
 # Documentation technique (non visible pour les utilisateurs)
 # 
@@ -90,6 +78,7 @@ with col2:
 # - Ce graphique montre l'évolution de la population d'une commune fictive
 # - Les points sont espacés d'au moins 5 ans pour respecter les contraintes de comparaison
 # - La couleur #3B825C est utilisée pour représenter les données de population
+# - Les points sont de taille modérée (size=60) et remplis sans contour (filled=True)
 # - L'application utilise un thème clair avec un fond blanc pour une meilleure lisibilité
 # - Les textes sont en couleur #272F4D pour l'interface et #000011 pour les graphiques
 # - La police Axiforma est utilisée pour les graphiques
@@ -100,10 +89,14 @@ with col2:
 # - Les volumes de population sont systématiquement affichés avec un espace comme séparateur de milliers (ex: 14 854)
 # - La notation scientifique est désactivée pour une meilleure lisibilité
 # - Les tooltips utilisent le même formatage que l'axe des ordonnées pour la cohérence
+# - Le formatage est uniquement utilisé pour l'affichage (tooltips, axe Y) et non pour l'export
+# - Les données exportées sont brutes pour permettre leur réutilisation dans d'autres logiciels
 # 
 # ### Configuration technique
 # - Un fichier `.streamlit/config.toml` est présent pour assurer la stabilité de l'application
 # - Le timeout est configuré à 2 heures pour éviter les déconnexions
 # - Les paramètres du serveur sont optimisés pour une meilleure performance
 # - Le mode "watchdog" est désactivé pour réduire les interruptions
-# - La compression WebSocket est désactivée pour améliorer la stabilité 
+# - La compression WebSocket est désactivée pour améliorer la stabilité
+# - L'export des données utilise le menu natif de Streamlit (bouton "..." en haut à droite des tableaux)
+# - Seules les données brutes sont exportées (pas de colonnes formatées) 
