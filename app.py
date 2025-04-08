@@ -60,22 +60,24 @@ st.title('Évolution de la Population')
 # Affichage du graphique
 st.altair_chart(chart, use_container_width=True)
 
-# Préparation des données pour l'export (sans la colonne formatée)
-df_export = df[['année', 'population']]
+# Création de deux colonnes pour le tableau et l'analyse
+col_table, col_analysis = st.columns([1, 1])
 
-# Configuration de l'export natif de Streamlit
-st.dataframe(
-    df_export,
-    hide_index=True,
-    column_config={
-        "année": "Année",
-        "population": "Population"
-    }
-)
+with col_table:
+    # Préparation des données pour l'export (sans la colonne formatée)
+    df_export = df[['année', 'population']]
 
-# Ajout des boutons d'export personnalisés
-col1, col2, col3 = st.columns([1,2,1])
-with col2:
+    # Configuration de l'export natif de Streamlit
+    st.dataframe(
+        df_export,
+        hide_index=True,
+        column_config={
+            "année": "Année",
+            "population": "Population"
+        }
+    )
+
+    # Ajout des boutons d'export personnalisés
     st.write("### Télécharger les données")
     
     # Export CSV
@@ -97,6 +99,18 @@ with col2:
         file_name="population_data.xlsx",
         mime="application/vnd.ms-excel",
     )
+
+with col_analysis:
+    st.write("### Analyse de l'évolution")
+    st.write("""
+    L'analyse de l'évolution de la population sur la période 1968-2021 révèle une croissance démographique marquée par deux phases distinctes :
+
+    1. **Une période de croissance modérée (1968-1990)** : La population passe de 8 949 à 10 100 habitants, soit une augmentation de 12,9% sur 22 ans. Cette période est caractérisée par une progression régulière mais relativement lente.
+
+    2. **Une accélération soutenue (1990-2021)** : En 31 ans, la population croît de 58,4%, passant de 10 100 à 16 000 habitants. Cette phase témoigne d'un dynamisme démographique plus marqué, avec une augmentation moyenne d'environ 190 habitants par an. La tendance à l'accélération se maintient jusqu'en 2021, sans signe de ralentissement.
+
+    Sur l'ensemble de la période, la population a presque doublé (+78,8%), passant de 8 949 à 16 000 habitants. Cette progression constante, sans période de déclin, suggère une attractivité territoriale durable.
+    """)
 
 # Documentation technique (non visible pour les utilisateurs)
 # 
