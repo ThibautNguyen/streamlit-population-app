@@ -109,7 +109,7 @@ with col_table:
                 "Année",
                 width="small"
             ),
-            "Population": st.column_config.NumberColumn(
+            "Population": st.column_config.Column(
                 "Population",
                 help="Population de la commune"
             )
