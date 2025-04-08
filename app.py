@@ -111,8 +111,7 @@ with col_table:
             ),
             "Population": st.column_config.NumberColumn(
                 "Population",
-                help="Population de la commune",
-                format="0"  # Format le plus simple possible pour les entiers
+                help="Population de la commune"
             )
         }
     )
