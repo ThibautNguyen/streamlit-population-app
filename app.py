@@ -2,6 +2,11 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 import io
+import os
+
+# Configuration du chemin du projet
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+os.chdir(PROJECT_ROOT)
 
 # Configuration de la page
 st.set_page_config(
@@ -9,6 +14,13 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# Constantes pour le formatage des nombres
+FORMAT_CONVENTIONS = {
+    'population_axis': {'format': ' >,.0f', 'label_expr': "replace(datum.label, ',', ' ')"},
+    'population_table': 'formatted',  # utilise population_formatted
+    'year': 'O'  # Ordinal, pas de séparateur
+}
 
 # Création des données
 data = {
@@ -18,19 +30,45 @@ data = {
 
 df = pd.DataFrame(data)
 
-# Fonction pour formater les nombres selon la convention française
 def format_number(x):
-    return f"{x:,.0f}".replace(",", " ")
+    """Formate un nombre selon les conventions françaises."""
+    if pd.isna(x):
+        return ""
+    return f"{int(x):,}".replace(",", " ")
+
+def validate_formatting(df):
+    """Valide que le formatage respecte les conventions."""
+    assert 'population_formatted' in df.columns, "La colonne population_formatted est requise"
+    assert 'année' in df.columns, "La colonne année est requise"
+    assert 'population' in df.columns, "La colonne population est requise"
+    # Vérifier que les années n'ont pas de séparateur
+    assert all(df['année'].astype(str).str.match(r'^\d{4}$')), "Les années doivent être au format YYYY"
+    return True
+
+def apply_french_formatting(df):
+    """Applique le formatage français aux données."""
+    df['population_formatted'] = df['population'].apply(format_number)
+    # Ajout d'une colonne pour l'affichage brut dans le tableau
+    df['population_brute'] = df['population'].astype(str)
+    return df
 
 # Ajout d'une colonne formatée pour les tooltips uniquement
-df['population_formatted'] = df['population'].apply(format_number)
+df = apply_french_formatting(df)
+validate_formatting(df)
 
 # Création du graphique
 base = alt.Chart(df).encode(
     x=alt.X('année:O', title='Année'),
     y=alt.Y('population:Q', 
             title='Population',
-            axis=alt.Axis(format=' >,.0f', labelExpr="replace(datum.label, ',', ' ')"))
+            axis=alt.Axis(
+                format=FORMAT_CONVENTIONS['population_axis']['format'],
+                labelExpr=FORMAT_CONVENTIONS['population_axis']['label_expr']
+            )),
+    tooltip=[
+        alt.Tooltip('année:O', title='Année'),
+        alt.Tooltip('population_formatted:N', title='Population')
+    ]
 )
 
 # Création de la ligne
@@ -41,11 +79,6 @@ points = base.mark_point(
     color='#3B825C',
     size=60,
     filled=True
-).encode(
-    tooltip=[
-        alt.Tooltip('année:O', title='Année'),
-        alt.Tooltip('population_formatted:N', title='Population')
-    ]
 )
 
 # Combinaison de la ligne et des points
@@ -64,24 +97,38 @@ st.altair_chart(chart, use_container_width=True)
 col_table, col_analysis = st.columns([1, 1])
 
 with col_table:
-    # Configuration de l'export natif de Streamlit
+    # Création du DataFrame pour l'affichage
+    display_df = pd.DataFrame({
+        'Année': df['année'],
+        'Population': df['population_brute']  # Utilisation de la version en texte brut
+    })
+    
     st.dataframe(
-        df_display := pd.DataFrame({
-            'Année': df['année'].astype(int),  # Forcer le type entier pour éviter les décimales
-            'Population': df['population']
-        }),
+        display_df,
         hide_index=True,
         column_config={
-            "Année": st.column_config.NumberColumn(
+            "Année": st.column_config.Column(
                 "Année",
-                format="%d"  # Format sans séparateur pour les années
+                width="small"
             ),
-            "Population": st.column_config.NumberColumn(
+            "Population": st.column_config.Column(  # Utilisation d'une colonne simple
                 "Population",
-                format=",d"  # Format avec séparateur pour la population
+                help="Population de la commune"
             )
         }
     )
+
+with col_analysis:
+    st.write("### Analyse de l'évolution")
+    st.write("""
+    L'analyse de l'évolution de la population sur la période 1968-2021 révèle une croissance démographique marquée par deux phases distinctes :
+
+    1. **Une période de croissance modérée (1968-1990)** : La population passe de 8 949 à 10 100 habitants, soit une augmentation de 12,9% sur 22 ans. Cette période est caractérisée par une progression régulière mais relativement lente.
+
+    2. **Une accélération soutenue (1990-2021)** : En 31 ans, la population croît de 58,4%, passant de 10 100 à 16 000 habitants. Cette phase témoigne d'un dynamisme démographique plus marqué, avec une augmentation moyenne d'environ 190 habitants par an. La tendance à l'accélération se maintient jusqu'en 2021, sans signe de ralentissement.
+
+    Sur l'ensemble de la période, la population a presque doublé (+78,8%), passant de 8 949 à 16 000 habitants. Cette progression constante, sans période de déclin, suggère une attractivité territoriale durable.
+    """)
 
     # Ajout des boutons d'export personnalisés
     st.write("### Télécharger les données")
@@ -109,18 +156,6 @@ with col_table:
         mime="application/vnd.ms-excel",
     )
 
-with col_analysis:
-    st.write("### Analyse de l'évolution")
-    st.write("""
-    L'analyse de l'évolution de la population sur la période 1968-2021 révèle une croissance démographique marquée par deux phases distinctes :
-
-    1. **Une période de croissance modérée (1968-1990)** : La population passe de 8 949 à 10 100 habitants, soit une augmentation de 12,9% sur 22 ans. Cette période est caractérisée par une progression régulière mais relativement lente.
-
-    2. **Une accélération soutenue (1990-2021)** : En 31 ans, la population croît de 58,4%, passant de 10 100 à 16 000 habitants. Cette phase témoigne d'un dynamisme démographique plus marqué, avec une augmentation moyenne d'environ 190 habitants par an. La tendance à l'accélération se maintient jusqu'en 2021, sans signe de ralentissement.
-
-    Sur l'ensemble de la période, la population a presque doublé (+78,8%), passant de 8 949 à 16 000 habitants. Cette progression constante, sans période de déclin, suggère une attractivité territoriale durable.
-    """)
-
 # Documentation technique (non visible pour les utilisateurs)
 # 
 # ### À propos de ce graphique
@@ -135,7 +170,9 @@ with col_analysis:
 # ### Formatage des nombres
 # - Une fonction `format_number` est utilisée pour garantir le formatage selon la convention française
 # - Les années sont affichées sans séparateur (ex: 1968)
-# - Les volumes de population sont systématiquement affichés avec un espace comme séparateur de milliers (ex: 14 854)
+# - Les volumes de population suivent deux conventions :
+#   1. Dans les tableaux : pas de séparateur pour permettre le tri (ex: 16000)
+#   2. Dans les graphiques et tooltips : espace comme séparateur de milliers selon la convention française (ex: 16 000)
 # - La notation scientifique est désactivée pour une meilleure lisibilité
 # - Les tooltips utilisent le même formatage que l'axe des ordonnées pour la cohérence
 # - Le formatage est uniquement utilisé pour l'affichage (tooltips, axe Y) et non pour l'export
