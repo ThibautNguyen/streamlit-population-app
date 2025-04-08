@@ -64,28 +64,23 @@ st.altair_chart(chart, use_container_width=True)
 col_table, col_analysis = st.columns([1, 1])
 
 with col_table:
-    # Préparation des données pour l'export (sans la colonne formatée)
-    df_export = df[['année', 'population']]
+    # Préparation des données pour l'affichage
+    df_display = pd.DataFrame({
+        'Année': df['année'],
+        'Population': df['population'].apply(format_number)
+    })
 
     # Configuration de l'export natif de Streamlit
     st.dataframe(
-        df_export,
-        hide_index=True,
-        column_config={
-            "année": st.column_config.NumberColumn(
-                "Année",
-                format="%d"
-            ),
-            "population": st.column_config.NumberColumn(
-                "Population",
-                help="Population de la commune",
-                format=" ,.0f"
-            )
-        }
+        df_display,
+        hide_index=True
     )
 
     # Ajout des boutons d'export personnalisés
     st.write("### Télécharger les données")
+    
+    # Préparation des données pour l'export (données brutes)
+    df_export = df[['année', 'population']]
     
     # Export CSV
     csv = df_export.to_csv(index=False).encode('utf-8-sig')
