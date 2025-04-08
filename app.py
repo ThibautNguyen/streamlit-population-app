@@ -66,14 +66,10 @@ col_table, col_analysis = st.columns([1, 1])
 with col_table:
     # Préparation des données pour l'export (sans la colonne formatée)
     df_export = df[['année', 'population']]
-    
-    # Formatage des données pour l'affichage
-    df_display = df_export.copy()
-    df_display['population'] = df_display['population'].apply(format_number)
 
     # Configuration de l'export natif de Streamlit
     st.dataframe(
-        df_display,
+        df_export,
         hide_index=True,
         column_config={
             "année": st.column_config.NumberColumn(
@@ -82,7 +78,8 @@ with col_table:
             ),
             "population": st.column_config.NumberColumn(
                 "Population",
-                format="%d"
+                help="Population de la commune",
+                format=" ,.0f"
             )
         }
     )
