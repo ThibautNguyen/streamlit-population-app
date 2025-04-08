@@ -6,7 +6,8 @@ import altair as alt
 st.set_page_config(
     page_title="Évolution de la Population",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
+    theme="light"  # Force le thème clair
 )
 
 # Création des données
@@ -48,8 +49,9 @@ st.title('Évolution de la Population')
 # Affichage du graphique
 st.altair_chart(chart, use_container_width=True)
 
-# Explication
-st.markdown("""
+"""
+Documentation technique (en commentaires, non visible pour les utilisateurs) :
+
 ### À propos de ce graphique
 - Ce graphique montre l'évolution de la population d'une commune fictive
 - Les points sont espacés d'au moins 5 ans pour respecter les contraintes de comparaison
@@ -71,4 +73,4 @@ st.markdown("""
 - Les paramètres du serveur sont optimisés pour une meilleure performance
 - Le mode "watchdog" est désactivé pour réduire les interruptions
 - La compression WebSocket est désactivée pour améliorer la stabilité
-""") 
+""" 
