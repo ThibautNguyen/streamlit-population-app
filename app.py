@@ -97,7 +97,7 @@ col_table, col_analysis = st.columns([1, 1])
 with col_table:
     # Création du DataFrame pour l'affichage
     display_df = pd.DataFrame({
-        'Année': df['année'].astype(int),  # Conversion explicite en entier
+        'Année': df['année'],
         'Population': df['population']
     })
     
@@ -105,14 +105,14 @@ with col_table:
         display_df,
         hide_index=True,
         column_config={
-            "Année": st.column_config.NumberColumn(
+            "Année": st.column_config.Column(
                 "Année",
-                width="small",
-                format="d"  # Format entier sans séparateur
+                width="small"
             ),
             "Population": st.column_config.NumberColumn(
                 "Population",
-                help="Population de la commune"
+                help="Population de la commune",
+                format="0"  # Format le plus simple possible pour les entiers
             )
         }
     )
