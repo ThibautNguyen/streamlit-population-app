@@ -6,8 +6,7 @@ import altair as alt
 st.set_page_config(
     page_title="Évolution de la Population",
     layout="wide",
-    initial_sidebar_state="expanded",
-    theme="light"  # Force le thème clair
+    initial_sidebar_state="expanded"
 )
 
 # Création des données
