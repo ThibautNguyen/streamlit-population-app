@@ -8,13 +8,6 @@ import os
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 os.chdir(PROJECT_ROOT)
 
-# Configuration de la page
-st.set_page_config(
-    page_title="Évolution de la Population",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
 # Constantes pour le formatage des nombres
 FORMAT_CONVENTIONS = {
     'population_axis': {'format': ' >,.0f', 'label_expr': "replace(datum.label, ',', ' ')"},
@@ -22,10 +15,17 @@ FORMAT_CONVENTIONS = {
     'year': 'O'  # Ordinal, pas de séparateur
 }
 
+# Configuration de la page
+st.set_page_config(
+    page_title="Évolution de la Population",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
 # Création des données
 data = {
-    'année': [1968, 1975, 1982, 1990, 1999, 2006, 2011, 2016, 2021],
-    'population': [8949, 9550, 9800, 10100, 11250, 12500, 13750, 14854, 16000]
+    'année': [1968, 1975, 1982, 1990, 1999, 2010, 2015, 2021],
+    'population': [8949, 9550, 9764, 10100, 11491, 14854, 15400, 16000]
 }
 
 df = pd.DataFrame(data)
@@ -48,8 +48,6 @@ def validate_formatting(df):
 def apply_french_formatting(df):
     """Applique le formatage français aux données."""
     df['population_formatted'] = df['population'].apply(format_number)
-    # Ajout d'une colonne pour l'affichage brut dans le tableau
-    df['population_brute'] = df['population'].astype(str)
     return df
 
 # Ajout d'une colonne formatée pour les tooltips uniquement
@@ -100,7 +98,7 @@ with col_table:
     # Création du DataFrame pour l'affichage
     display_df = pd.DataFrame({
         'Année': df['année'],
-        'Population': df['population_brute']  # Utilisation de la version en texte brut
+        'Population': df['population']
     })
     
     st.dataframe(
@@ -111,7 +109,7 @@ with col_table:
                 "Année",
                 width="small"
             ),
-            "Population": st.column_config.Column(  # Utilisation d'une colonne simple
+            "Population": st.column_config.NumberColumn(
                 "Population",
                 help="Population de la commune"
             )
@@ -157,16 +155,6 @@ with col_analysis:
     )
 
 # Documentation technique (non visible pour les utilisateurs)
-# 
-# ### À propos de ce graphique
-# - Ce graphique montre l'évolution de la population d'une commune fictive
-# - Les points sont espacés d'au moins 5 ans pour respecter les contraintes de comparaison
-# - La couleur #3B825C est utilisée pour représenter les données de population
-# - Les points sont de taille modérée (size=60) et remplis sans contour (filled=True)
-# - L'application utilise un thème clair avec un fond blanc pour une meilleure lisibilité
-# - Les textes sont en couleur #272F4D pour l'interface et #000011 pour les graphiques
-# - La police Axiforma est utilisée pour les graphiques
-# 
 # ### Formatage des nombres
 # - Une fonction `format_number` est utilisée pour garantir le formatage selon la convention française
 # - Les années sont affichées sans séparateur (ex: 1968)
@@ -176,13 +164,4 @@ with col_analysis:
 # - La notation scientifique est désactivée pour une meilleure lisibilité
 # - Les tooltips utilisent le même formatage que l'axe des ordonnées pour la cohérence
 # - Le formatage est uniquement utilisé pour l'affichage (tooltips, axe Y) et non pour l'export
-# - Les données exportées sont brutes pour permettre leur réutilisation dans d'autres logiciels
-# 
-# ### Configuration technique
-# - Un fichier `.streamlit/config.toml` est présent pour assurer la stabilité de l'application
-# - Le timeout est configuré à 2 heures pour éviter les déconnexions
-# - Les paramètres du serveur sont optimisés pour une meilleure performance
-# - Le mode "watchdog" est désactivé pour réduire les interruptions
-# - La compression WebSocket est désactivée pour améliorer la stabilité
-# - L'export des données utilise le menu natif de Streamlit (bouton "..." en haut à droite des tableaux)
-# - Seules les données brutes sont exportées (pas de colonnes formatées) 
+# - Les données exportées sont brutes pour permettre leur réutilisation dans d'autres logiciels 
