@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
+import io
 
 # Configuration de la page
 st.set_page_config(
@@ -71,6 +72,31 @@ st.dataframe(
         "population": "Population"
     }
 )
+
+# Ajout des boutons d'export personnalisés
+col1, col2, col3 = st.columns([1,2,1])
+with col2:
+    st.write("### Télécharger les données")
+    
+    # Export CSV
+    csv = df_export.to_csv(index=False).encode('utf-8-sig')
+    st.download_button(
+        label="📥 Télécharger en CSV",
+        data=csv,
+        file_name="population_data.csv",
+        mime="text/csv",
+    )
+    
+    # Export Excel
+    buffer = io.BytesIO()
+    with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
+        df_export.to_excel(writer, sheet_name='Population', index=False)
+    st.download_button(
+        label="📥 Télécharger en Excel",
+        data=buffer.getvalue(),
+        file_name="population_data.xlsx",
+        mime="application/vnd.ms-excel",
+    )
 
 # Documentation technique (non visible pour les utilisateurs)
 # 
