@@ -67,13 +67,30 @@ with col_table:
     # Préparation des données pour l'affichage
     df_display = pd.DataFrame({
         'Année': df['année'],
-        'Population': df['population'].apply(format_number)
+        'Population_tri': df['population'],  # Colonne pour le tri
+        'Population': df['population'].apply(format_number)  # Colonne pour l'affichage
     })
 
     # Configuration de l'export natif de Streamlit
     st.dataframe(
         df_display,
-        hide_index=True
+        hide_index=True,
+        column_config={
+            "Année": st.column_config.NumberColumn(
+                "Année",
+                format="%d"
+            ),
+            "Population_tri": st.column_config.Column(
+                "Population",
+                help="Population de la commune",
+                default=True
+            ),
+            "Population": st.column_config.Column(
+                "Population",
+                help="Population de la commune"
+            )
+        },
+        column_order=["Année", "Population"]  # Cache la colonne de tri
     )
 
     # Ajout des boutons d'export personnalisés
