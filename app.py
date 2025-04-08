@@ -164,4 +164,23 @@ with col_analysis:
 # - La notation scientifique est désactivée pour une meilleure lisibilité
 # - Les tooltips utilisent le même formatage que l'axe des ordonnées pour la cohérence
 # - Le formatage est uniquement utilisé pour l'affichage (tooltips, axe Y) et non pour l'export
-# - Les données exportées sont brutes pour permettre leur réutilisation dans d'autres logiciels 
+# - Les données exportées sont brutes pour permettre leur réutilisation dans d'autres logiciels
+#
+# ### Différences entre environnements
+# - Le formatage des nombres peut différer entre l'environnement local et Streamlit Cloud
+# - Solution : utiliser des chaînes de caractères (str) pour l'affichage des nombres dans les tableaux évite les problèmes de formatage automatique
+# - Les colonnes numériques (NumberColumn) peuvent ajouter des séparateurs de milliers non désirés sur Streamlit Cloud
+#
+# ### Bonnes pratiques Git et Terminal
+# - Sous Windows PowerShell, utiliser le point-virgule ";" au lieu de "&&" pour chaîner les commandes
+# - Exemple : git add app.py; git commit -m "message"; git push
+# - Toujours vérifier les modifications localement avant de pousser vers GitHub
+# - Préférer des commits atomiques avec des messages descriptifs en français
+#
+# ### Résolution de problèmes
+# - En cas de différence d'affichage entre local et cloud :
+#   1. Vérifier le type des données (str vs int/float)
+#   2. Éviter les formats complexes qui peuvent être interprétés différemment
+#   3. Privilégier l'affichage brut pour les tableaux si le tri n'est pas critique
+# - Pour le tri numérique : garder les données en type numérique dans le DataFrame
+# - Pour l'affichage : convertir en str si nécessaire pour éviter le formatage automatique 
