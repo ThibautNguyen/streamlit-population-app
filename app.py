@@ -95,10 +95,10 @@ st.altair_chart(chart, use_container_width=True)
 col_table, col_analysis = st.columns([1, 1])
 
 with col_table:
-    # Création du DataFrame pour l'affichage
+    # Création du DataFrame pour l'affichage avec conversion explicite en chaînes
     display_df = pd.DataFrame({
-        'Année': df['année'],
-        'Population': df['population']
+        'Année': df['année'].astype(str),
+        'Population': df['population'].astype(str)
     })
     
     st.dataframe(
